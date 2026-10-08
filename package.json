@@ -1,0 +1,30 @@
+{
+  "name": "ai-agent-testing",
+  "version": "1.0.0",
+  "description": "AI Testing Beyond the Basics: Ensuring Truthful and Reliable Chatbots and Agents Demos",
+  "private": true,
+  "scripts": {
+    "eval:promptfoo": "promptfoo eval -c evals/promptfoo/promptfooconfig.yaml --no-cache"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lreimer/ai-agent-testing"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "commonjs",
+  "overrides": {
+    "basic-ftp": "6.2.2",
+    "csv-parse": "7.0.3",
+    "drizzle-orm": "0.45.4",
+    "fast-xml-parser": "5.7.1",
+    "mathjs": "15.2.0",
+    "sharp": "0.35.5",
+    "tmp": "0.2.7",
+    "uuid": "11.1.1"
+  },
+  "devDependencies": {
+    "promptfoo": "0.116.7"
+  }
+}
