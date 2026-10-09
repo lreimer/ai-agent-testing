@@ -32,4 +32,5 @@ def test_retrieved_context_faithfulness(question):
             )
 
     value = asyncio.run(score()).value
+    print(f"RAGAS faithfulness: {value:.3f} (threshold: 0.8) — {question}")
     assert value >= 0.8, f"Faithfulness below threshold: {value}"
