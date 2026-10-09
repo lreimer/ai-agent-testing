@@ -129,3 +129,11 @@ option with private prompts or outputs.
 Live calls cost money, need network access and model quota, and can produce
 non-deterministic results. A failing live evaluation is useful demo evidence,
 not necessarily a broken test harness. Offline tests do not validate model quality.
+
+## Maintainer
+
+M.-Leander Reimer (@lreimer), <mario-leander.reimer@qaware.de>
+
+## License
+
+This software is provided under the MIT open source license, read the `LICENSE` file for details.
