@@ -1,0 +1,13 @@
+[project]
+name = "ai-agent-testing"
+version = "1.0.0"
+description = "AI Testing Beyond the Basics: Ensuring Truthful and Reliable Chatbots and Agents Demos"
+requires-python = ">=3.12"
+dependencies = [
+    "deepeval==4.2.8",
+    # RAGAS still imports the Vertex AI wrapper removed in langchain-community 0.4.
+    "langchain-community==0.3.31",
+    "openai==1.109.1",
+    "pytest==8.4.2",
+    "ragas==0.4.3",
+]
