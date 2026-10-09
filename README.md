@@ -1,4 +1,4 @@
-# ai-agent-testing
+# AI Agent Testing
 AI Testing Beyond the Basics: Ensuring Truthful and Reliable Chatbots and Agents Demos
 
 Two **Google ADK Java** targets share a deliberately small, fictional conference FAQ:
@@ -24,6 +24,13 @@ Run the following from the repository root:
 
 ```bash
 make build
+
+# or alternatively
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+npm ci
+mvn -f agents/pom.xml package
 ```
 
 `make build` runs `uv sync --locked`, `npm ci`, and the Maven package build.
@@ -46,6 +53,9 @@ export GOOGLE_API_KEY
 export GOOGLE_GENAI_USE_VERTEXAI=false
 export ADK_MODEL=gemini-flash-latest
 make run
+
+# or alternatively
+mvn -f agents/pom.xml compile exec:java
 ```
 
 Open <http://127.0.0.1:8000> for the ADK development UI and select either target.
@@ -58,6 +68,9 @@ In a second terminal:
 ```bash
 curl http://127.0.0.1:8000/list-apps
 uv run --locked python -c 'from evals.adk_client import ask; print(ask("conference_agent", "When is the keynote?"))'
+
+# or alternatively
+python -c 'from evals.adk_client import ask; print(ask("conference_agent", "When is the keynote?"))'
 ```
 
 The Python adapter creates a fresh session for each question, captures the final
@@ -79,6 +92,9 @@ return a nonzero exit status.
 
 ```bash
 make test
+
+# or alternatively
+python -m pytest
 ```
 
 This tests event parsing, error handling, session cleanup, and the PromptFoo
@@ -93,6 +109,9 @@ read -rsp "OpenAI judge API key: " OPENAI_API_KEY; echo
 export OPENAI_API_KEY
 export JUDGE_MODEL=gpt-4o-mini
 make demo-deepeval
+
+# or alternatively
+RUN_LIVE_EVALS=1 python -m pytest evals/test_deepeval.py -v
 ```
 
 ### RAGAS
@@ -101,6 +120,9 @@ Uses the same server and OpenAI judge credentials:
 
 ```bash
 make demo-ragas
+
+# or alternatively
+RUN_LIVE_EVALS=1 python -m pytest evals/test_ragas.py -v
 ```
 
 The retrieval demo is intentionally a tiny topic lookup, not a vector database.

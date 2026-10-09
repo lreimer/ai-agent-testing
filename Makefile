@@ -40,7 +40,7 @@ demo-deepeval:
 demo-ragas:
 	RUN_LIVE_EVALS=1 $(UV) run --locked python -m pytest evals/test_ragas.py -v -s -rA
 
-demo-promptfoo: setup-python setup-node
+demo-promptfoo:
 	PYTHONPATH="$(CURDIR)$${PYTHONPATH:+:$$PYTHONPATH}" \
 		PROMPTFOO_PYTHON="$(CURDIR)/.venv/bin/python" \
 		PROMPTFOO_DISABLE_TELEMETRY=1 \
