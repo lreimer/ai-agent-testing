@@ -36,18 +36,34 @@ def test_promptfoo_python_wiring(tmp_path):
             question = payload["newMessage"]["parts"][0]["text"]
             answer = "The keynote starts at 09:00 in Hall A."
             events = []
-            if "workshop" in question:
+            topic = None
+            if "session" in question or "AI Testing Beyond the Basics" in question:
+                answer = (
+                    "At JavaCro, Mario-Leander Reimer presents "
+                    "AI Testing Beyond the Basics: Ensuring Truthful and Reliable Chatbots and Agents "
+                    "on Monday from 5:55 pm to 6:40 pm in Hall B (Club, level 0)."
+                )
+                topic = "session"
+            elif "JavaCro" in question:
+                answer = "JavaCro is a supported conference."
+                topic = "javacro"
+            elif "workshop" in question:
                 answer = "The AI testing workshop starts at 14:00 in Room B. Bring a laptop."
+                topic = "workshop"
+            elif "WiFi" in question:
+                answer = "Use the hotel's open WiFi network. It does not require a password."
+                topic = "wifi"
+            elif "parking" in question:
+                answer = "I do not know the parking policy."
+            if topic is not None and payload["appName"] == "conference_agent":
                 events = [
                     {"content": {"role": "model", "parts": [{"functionCall": {
-                        "name": "lookupConference", "args": {"topic": "workshop"},
+                        "name": "lookupConference", "args": {"topic": topic},
                     }}]}},
                     {"content": {"role": "user", "parts": [{"functionResponse": {
                         "name": "lookupConference", "response": {"contexts": [answer]},
                     }}]}},
                 ]
-            elif "WiFi" in question:
-                answer = "I do not know the WiFi password."
             self.respond(events + [{"content": {"role": "model", "parts": [{"text": answer}]}}])
 
         def do_DELETE(self):
@@ -72,7 +88,7 @@ def test_promptfoo_python_wiring(tmp_path):
             },
         )
         assert result.returncode == 0, result.stdout + result.stderr
-        assert len(deleted_sessions) == 4
+        assert len(deleted_sessions) == 8
     finally:
         server.shutdown()
         server.server_close()

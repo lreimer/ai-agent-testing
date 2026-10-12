@@ -1,7 +1,7 @@
 # AI Agent Testing
 AI Testing Beyond the Basics: Ensuring Truthful and Reliable Chatbots and Agents Demos
 
-Two **Google ADK Java** targets share a deliberately small, fictional conference FAQ:
+Two **Google ADK Java** targets share a deliberately small conference FAQ:
 
 - `chatbot`: an `LlmAgent` with the FAQ in its instructions; no tools.
 - `conference_agent`: an `LlmAgent` that calls `lookupConference` to retrieve facts.
@@ -145,13 +145,19 @@ option with private prompts or outputs.
 
 ## Conference walkthrough
 
+Ask either target "When and where is Mario-Leander Reimer's JavaCro session?"
+The agent should retrieve the `session` topic and answer with the details above.
+For the separate fictional FAQ demonstration:
+
 1. Ask both targets “When and where is the keynote?” (09:00, Hall A).
 2. Ask the agent about the workshop (14:00, Room B, bring a laptop);
    inspect its `lookupConference` call in the UI.
-3. Ask for an unknown WiFi password; discuss abstention versus hallucination.
-4. Run the three demos and contrast deterministic Python assertions with
+3. Ask for the WiFi password; the agent should say the hotel's open WiFi network
+   does not require one.
+4. Ask about an unknown topic such as parking; discuss abstention versus hallucination.
+5. Run the three demos and contrast deterministic Python assertions with
    LLM-based grading and tool-call checks.
-5. Try the schedule-override prompt in PromptFoo and discuss why prompt
+6. Try the schedule-override prompt in PromptFoo and discuss why prompt
    instructions alone are not a security boundary.
 
 Live calls cost money, need network access and model quota, and can produce
