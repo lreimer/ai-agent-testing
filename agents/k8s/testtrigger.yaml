@@ -1,0 +1,26 @@
+apiVersion: tests.testkube.io/v1
+kind: TestTrigger
+metadata:
+  name: ai-agent-testing-deployment
+  namespace: testkube
+spec:
+  resource: deployment
+  resourceSelector:
+    name: ai-agent-testing
+    namespace: default
+  event: modified
+  conditionSpec:
+    timeout: 300
+    delay: 5
+    conditions:
+      - type: Progressing
+        status: "True"
+        reason: NewReplicaSetAvailable
+  action: run
+  execution: testworkflow
+  testSelector:
+    namespace: testkube
+    labelSelector:
+      matchLabels:
+        app.kubernetes.io/name: ai-agent-testing
+  concurrencyPolicy: forbid

@@ -5,7 +5,7 @@ MVN ?= mvn
 NPM ?= npm
 DOCKER ?= docker
 
-.PHONY: help setup setup-python setup-node build docker-build docker-build-evals run test demos demo-deepeval demo-ragas demo-promptfoo k8s-secret k8s-evals-secret testworkflow
+.PHONY: help setup setup-python setup-node build docker-build docker-build-evals run test demos demo-deepeval demo-ragas demo-promptfoo k8s-secret k8s-evals-secret testworkflow testtrigger
 
 help:
 	@printf '%s\n' \
@@ -21,6 +21,7 @@ help:
 		'make k8s-secret     Create the Kubernetes secret from GOOGLE_API_KEY' \
 		'make k8s-evals-secret Create the Testkube judge secret from OPENAI_API_KEY' \
 		'make testworkflow   Apply and run the Testkube TestWorkflow' \
+		'make testtrigger    Apply both TestWorkflows and their deployment trigger' \
 		'make demos          Run all three live demos sequentially'
 
 setup: setup-python setup-node
@@ -72,6 +73,7 @@ deploy:
 
 testworkflow:
 	@kubectl apply -f agents/k8s/testworkflow.yaml
+	@kubectl apply -f agents/k8s/testtrigger.yaml
 	testkube run testworkflow ai-agent-testing --namespace testkube --watch
 
 demos:

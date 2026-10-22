@@ -3,6 +3,8 @@ apiVersion: testworkflows.testkube.io/v1
 metadata:
   name: ephemeral-test
   namespace: testkube
+  labels:
+    app.kubernetes.io/name: ai-agent-testing
 spec:
   content:
     git:

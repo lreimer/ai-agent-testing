@@ -192,6 +192,19 @@ another namespace, or to change the judge model, override the config:
 Without Kubernetes, `docker run --rm ai-agent-testing-evals:local` runs only the
 offline contract tests.
 
+### Trigger TestWorkflows on deployment changes
+
+[agents/k8s/testtrigger.yaml](agents/k8s/testtrigger.yaml) watches modifications
+to the `ai-agent-testing` Deployment in the `default` namespace. It waits up to
+five minutes for the `Progressing=True` condition with reason
+`NewReplicaSetAvailable`, checking every five seconds. It then runs the
+TestWorkflows in `testkube` labeled `app.kubernetes.io/name: ai-agent-testing`:
+the evaluation workflow and the `ephemeral-test` k6 workflow defined in
+[agents/k8s/k6workflow.yaml](agents/k8s/k6workflow.yaml). The k6 workflow runs its
+existing external Git-based script; the trigger does not change its target.
+The `forbid` concurrency policy skips a new execution while the selected
+workflow is already running.
+
 ## Run the demos
 
 Run `make help` for all targets. `make setup` installs only dependencies.
