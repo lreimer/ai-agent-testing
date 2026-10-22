@@ -82,6 +82,9 @@ Set `ADK_BASE_URL` if you change the server port.
 Build from the repository root (Docker with BuildKit required):
 
 ```bash
+make docker-build
+
+# or alternatively
 docker build -f agent/Dockerfile -t ai-agent-testing:local .
 ```
 
