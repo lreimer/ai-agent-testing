@@ -4,7 +4,7 @@ UV ?= uv
 MVN ?= mvn
 NPM ?= npm
 
-.PHONY: help setup setup-python setup-node build run test demos demo-deepeval demo-ragas demo-promptfoo
+.PHONY: help setup setup-python setup-node build run test demos demo-deepeval demo-ragas demo-promptfoo k8s-secret
 
 help:
 	@printf '%s\n' \
@@ -15,6 +15,7 @@ help:
 		'make demo-deepeval  Run live DeepEval tests (server and judge key required)' \
 		'make demo-ragas     Run live RAGAS tests (server and judge key required)' \
 		'make demo-promptfoo Run PromptFoo with its console results table (server required)' \
+		'make k8s-secret     Create the Kubernetes secret from GOOGLE_API_KEY' \
 		'make demos          Run all three live demos sequentially'
 
 setup: setup-python setup-node
@@ -45,6 +46,10 @@ demo-promptfoo:
 		PROMPTFOO_PYTHON="$(CURDIR)/.venv/bin/python" \
 		PROMPTFOO_DISABLE_TELEMETRY=1 \
 		$(NPM) run eval:promptfoo -- --table
+
+k8s-secret:
+	: "$${GOOGLE_API_KEY:?...Set GOOGLE_API_KEY in your environment first}"
+	kubectl create secret generic ai-agent-testing --from-literal="GOOGLE_API_KEY=$$GOOGLE_API_KEY"
 
 demos:
 	$(MAKE) demo-deepeval
