@@ -63,12 +63,12 @@ spec:
   steps:
     - name: Offline contract tests
       shell: |
-        RUN_LIVE_EVALS=0 python -m pytest -v -rA -p no:cacheprovider \
+        RUN_LIVE_EVALS=0 uv run --locked python -m pytest -v -rA -p no:cacheprovider \
           --junitxml=/reports/contract-tests.xml
     - name: Wait for agent service
       timeout: 3m
       shell: |
-        python - <<'PY'
+        uv run --locked python - <<'PY'
         import os, time, urllib.request
         url = os.environ["ADK_BASE_URL"].rstrip("/") + "/list-apps"
         while True:
@@ -82,15 +82,15 @@ spec:
         PY
     - name: DeepEval demo
       shell: |
-        RUN_LIVE_EVALS=1 DEEPEVAL_VERBOSE_MODE=1 python -m pytest evals/test_deepeval.py \
+        RUN_LIVE_EVALS=1 DEEPEVAL_VERBOSE_MODE=1 uv run --locked python -m pytest evals/test_deepeval.py \
           -v -s -rA -p no:cacheprovider --junitxml=/reports/deepeval.xml
     - name: RAGAS demo
       shell: |
-        RUN_LIVE_EVALS=1 python -m pytest evals/test_ragas.py \
+        RUN_LIVE_EVALS=1 uv run --locked python -m pytest evals/test_ragas.py \
           -v -s -rA -p no:cacheprovider --junitxml=/reports/ragas.xml
     - name: PromptFoo demo
       shell: |
-        promptfoo eval -c evals/promptfoo/promptfooconfig.yaml --no-cache --table \
+        uv run --locked npm run eval:promptfoo -- --table \
           --no-progress-bar --output /reports/promptfoo.json /reports/promptfoo.html
     - name: Save reports
       condition: always

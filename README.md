@@ -37,8 +37,9 @@ mvn -f agents/pom.xml package
 uv manages `.venv` automatically; no activation is needed. Python dependencies
 are declared in `pyproject.toml` and resolved in the committed `uv.lock`.
 The Python dependency pins keep RAGAS's legacy imports compatible.
-PromptFoo 0.116.7 is pinned for its Python provider and local SQLite support.
-`.npmrc` omits optional dependencies that these demos do not need. The npm
+PromptFoo 0.124.1 is pinned for its Python provider and local SQLite support.
+It requires Node.js >=22.22.0 (the Docker image uses Node.js 24).
+`.npmrc` includes optional dependencies for its platform-specific SQLite bindings. The npm
 overrides select patched transitive dependencies; the Python-provider path is
 the supported demo integration.
 
@@ -156,8 +157,9 @@ authentication. No Ingress or public LoadBalancer is provided.
 ### Run the tests and demos with Testkube
 
 [evals/Dockerfile](evals/Dockerfile) packages the offline tests and the DeepEval,
-RAGAS, and PromptFoo demos (Python 3.12 and Node.js with locked dependencies)
-into a non-root image. [agents/k8s/testworkflow.yaml](agents/k8s/testworkflow.yaml)
+RAGAS, and PromptFoo demos into a non-root image. As locally, uv installs
+Python and the locked dependencies, and every Python test and evaluation runs
+through `uv run --locked`; npm installs the locked PromptFoo CLI. [agents/k8s/testworkflow.yaml](agents/k8s/testworkflow.yaml)
 defines the `ai-agent-testing` TestWorkflow in the `testkube` namespace. It
 runs the offline contract tests, waits for the agent's `/list-apps` endpoint,
 and then runs DeepEval, RAGAS, and PromptFoo in sequence, stopping at the first
@@ -177,7 +179,7 @@ make testworkflow
 
 # or alternatively
 docker build -f evals/Dockerfile -t ai-agent-testing-evals:local .
-printenv OPENAI_API_KEY | kubectl create secret generic ai-agent-testing-evals \
+printf '%s' "$OPENAI_API_KEY" | kubectl create secret generic ai-agent-testing-evals \
   --namespace testkube --from-file=OPENAI_API_KEY=/dev/stdin
 kubectl apply -f agents/k8s/testworkflow.yaml
 testkube run testworkflow ai-agent-testing --namespace testkube --watch

@@ -54,9 +54,8 @@ demo-ragas:
 
 demo-promptfoo:
 	PYTHONPATH="$(CURDIR)$${PYTHONPATH:+:$$PYTHONPATH}" \
-		PROMPTFOO_PYTHON="$(CURDIR)/.venv/bin/python" \
 		PROMPTFOO_DISABLE_TELEMETRY=1 \
-		$(NPM) run eval:promptfoo -- --table
+		$(UV) run --locked $(NPM) run eval:promptfoo -- --table
 
 k8s-secret:
 	: "$${GOOGLE_API_KEY:?...Set GOOGLE_API_KEY in your environment first}"
@@ -64,7 +63,7 @@ k8s-secret:
 
 k8s-evals-secret:
 	: "$${OPENAI_API_KEY:?...Set OPENAI_API_KEY in your environment first}"
-	printenv OPENAI_API_KEY | kubectl create secret generic ai-agent-testing-evals \
+	printf '%s' "$$OPENAI_API_KEY" | kubectl create secret generic ai-agent-testing-evals \
 		--namespace testkube --from-file=OPENAI_API_KEY=/dev/stdin
 
 deploy:
