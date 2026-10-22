@@ -85,7 +85,7 @@ Build from the repository root (Docker with BuildKit required):
 make docker-build
 
 # or alternatively
-docker build -f agent/Dockerfile -t ai-agent-testing:local .
+docker build -f agents/Dockerfile -t ai-agent-testing:local .
 ```
 
 The multi-stage build uses Maven and Java 17, then copies only the application
@@ -121,12 +121,12 @@ when running the evaluation clients on the host.
 
 ## Run on Kubernetes
 
-The manifests in [agent/k8s/](agent/k8s/) deploy one replica of `ai-agent-testing:local`
+The manifests in [agents/k8s/](agents/k8s/) deploy one replica of `ai-agent-testing:local`
 and an internal `ClusterIP` Service on port 8000. Build the image as above and
 make it available to your cluster's container runtime (for example,
 `kind load docker-image ai-agent-testing:local` for kind). For a remote cluster,
 push the image to your registry and update `image` in
-[agent/k8s/deployment.yaml](agent/k8s/deployment.yaml) to that registry reference.
+[agents/k8s/deployment.yaml](agents/k8s/deployment.yaml) to that registry reference.
 
 Create the required Secret in the same namespace as the Deployment, using
 the exported `GOOGLE_API_KEY`, then apply the manifests:
@@ -134,7 +134,7 @@ the exported `GOOGLE_API_KEY`, then apply the manifests:
 ```bash
 printenv GOOGLE_API_KEY | kubectl create secret generic ai-agent-testing \
   --from-file=GOOGLE_API_KEY=/dev/stdin
-kubectl apply -f agent/k8s/
+kubectl apply -f agents/k8s/
 kubectl rollout status deployment/ai-agent-testing
 kubectl port-forward --address 127.0.0.1 service/ai-agent-testing 8000:8000
 ```

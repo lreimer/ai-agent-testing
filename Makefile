@@ -32,7 +32,7 @@ build: setup
 	$(MVN) -f agents/pom.xml package
 
 docker-build:
-	$(DOCKER) build -f agent/Dockerfile -t ai-agent-testing:local .
+	$(DOCKER) build -f agents/Dockerfile -t ai-agent-testing:local .
 
 run:
 	GOOGLE_GENAI_USE_VERTEXAI=false $(MVN) -f agents/pom.xml compile exec:java
