@@ -77,6 +77,79 @@ The Python adapter creates a fresh session for each question, captures the final
 answer, tool calls, and retrieved contexts from `/run`, then deletes the session.
 Set `ADK_BASE_URL` if you change the server port.
 
+## Run with Docker
+
+Build from the repository root (Docker with BuildKit required):
+
+```bash
+docker build -t ai-agent-testing:local .
+```
+
+The multi-stage build uses Maven and Java 17, then copies only the application
+JAR and runtime dependencies into a **Distroless Java 17** image. The runtime
+runs as non-root (UID/GID 65532), with no shell, package manager, Maven, Python,
+or Node.js. Local build outputs and credentials are excluded from the build
+context. No local Java or Maven installation is needed.
+
+With `GOOGLE_API_KEY` exported as described above:
+
+```bash
+docker run --rm --name ai-agent-testing \
+  -p 127.0.0.1:8000:8000 \
+  -e GOOGLE_API_KEY \
+  -e ADK_MODEL=gemini-flash-latest \
+  ai-agent-testing:local
+```
+
+Open <http://127.0.0.1:8000> or check the API from another terminal:
+
+```bash
+curl --fail http://127.0.0.1:8000/list-apps
+docker stop ai-agent-testing
+```
+
+The image sets `ADK_HOST=0.0.0.0` so Docker port publishing works; non-container
+runs still default to `127.0.0.1`. Keep the host-side port bound to loopback as
+shown: this remains an unauthenticated demo, not a production deployment.
+Credentials are supplied only at runtime, never baked into the image.
+To use another host port, for example 9000, publish
+`-p 127.0.0.1:9000:8000` and set `ADK_BASE_URL=http://127.0.0.1:9000`
+when running the evaluation clients on the host.
+
+## Run on Kubernetes
+
+The manifests in [k8s/](k8s/) deploy one replica of `ai-agent-testing:local`
+and an internal `ClusterIP` Service on port 8000. Build the image as above and
+make it available to your cluster's container runtime (for example,
+`kind load docker-image ai-agent-testing:local` for kind). For a remote cluster,
+push the image to your registry and update `image` in
+[k8s/deployment.yaml](k8s/deployment.yaml) to that registry reference.
+
+Create the required Secret in the same namespace as the Deployment, using
+the exported `GOOGLE_API_KEY`, then apply the manifests:
+
+```bash
+printenv GOOGLE_API_KEY | kubectl create secret generic ai-agent-testing \
+  --from-file=GOOGLE_API_KEY=/dev/stdin
+kubectl apply -f k8s/
+kubectl rollout status deployment/ai-agent-testing
+kubectl port-forward --address 127.0.0.1 service/ai-agent-testing 8000:8000
+```
+
+Ensure `GOOGLE_API_KEY` is exported and non-empty before creating the Secret.
+Do not commit credentials or generated Secret YAML. Open
+<http://127.0.0.1:8000> or run `curl --fail http://127.0.0.1:8000/list-apps`
+in another terminal. Stop port-forwarding with Ctrl-C.
+
+The Deployment runs non-root with a read-only root filesystem and a writable
+temporary volume. Startup, readiness, and liveness probes use `/list-apps`
+without making paid model calls. CPU and memory requests/limits are initial
+demo defaults; tune them for your workload. Sessions remain in memory and are
+lost on Pod restarts or replacement; keep a single replica for this demo.
+The Service does not expose the app outside the cluster, but other cluster
+workloads can reach it. Use only a trusted demo cluster; there is still no
+authentication. No Ingress or public LoadBalancer is provided.
+
 ## Run the demos
 
 Run `make help` for all targets. `make setup` installs only dependencies.

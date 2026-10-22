@@ -61,7 +61,7 @@ public final class AgentServer {
         .tools(FunctionTool.create(AgentServer.class, "lookupConference"))
         .build();
 
-    System.setProperty("server.address", "127.0.0.1");
+    System.setProperty("server.address", System.getenv().getOrDefault("ADK_HOST", "127.0.0.1"));
     System.setProperty("server.port", System.getenv().getOrDefault("ADK_PORT", "8000"));
     System.setProperty("adk.web.cors.origins", "http://127.0.0.1:"
         + System.getProperty("server.port"));
