@@ -10,24 +10,24 @@ defaultTest:
     - type: python
       value: file://assertions.py
 tests:
-  - description: Chatbot answers JavaCro session details
+  - description: Chatbot answers TestCon session details
     vars:
       app: chatbot
-      question: Who presents AI Testing Beyond the Basics at JavaCro, and when and where is it?
+      question: Who presents AI Testing Beyond the Basics at TestCon, and when and where is it?
       expected: "Mario-Leander Reimer|Monday|5:55|6:40|Hall B|Club|level 0"
-  - description: Agent retrieves JavaCro conference details
+  - description: Agent retrieves TestCon conference details
     vars:
       app: conference_agent
-      question: Does the FAQ support the JavaCro conference?
-      expected: "JavaCro"
-      topic: javacro
+      question: Does the FAQ support the TestCon conference?
+      expected: "TestCon"
+      topic: testcon
     assert:
       - type: python
         value: file://assertions.py:used_tool
-  - description: Agent retrieves the JavaCro session
+  - description: Agent retrieves the TestCon session
     vars:
       app: conference_agent
-      question: What is Mario-Leander Reimer's session at JavaCro, and when and where does it take place? Use 12-hour times.
+      question: What is Mario-Leander Reimer's session at TestCon, and when and where does it take place? Use 12-hour times.
       expected: "AI Testing Beyond the Basics: Ensuring Truthful and Reliable Chatbots and Agents|Mario-Leander Reimer|Monday|5:55|6:40|Hall B|Club|level 0"
       topic: session
     assert:

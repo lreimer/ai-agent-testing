@@ -4,5 +4,6 @@
         "mvn -f agents/pom.xml": true,
         "make": true,
         "uv": true
-    }
+    },
+    "python.terminal.useEnvFile": true
 }

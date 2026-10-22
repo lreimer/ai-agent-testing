@@ -39,14 +39,14 @@ def test_promptfoo_python_wiring(tmp_path):
             topic = None
             if "session" in question or "AI Testing Beyond the Basics" in question:
                 answer = (
-                    "At JavaCro, Mario-Leander Reimer presents "
+                    "At TestCon, Mario-Leander Reimer presents "
                     "AI Testing Beyond the Basics: Ensuring Truthful and Reliable Chatbots and Agents "
                     "on Monday from 5:55 pm to 6:40 pm in Hall B (Club, level 0)."
                 )
                 topic = "session"
-            elif "JavaCro" in question:
-                answer = "JavaCro is a supported conference."
-                topic = "javacro"
+            elif "TestCon" in question:
+                answer = "TestCon is a supported conference."
+                topic = "testcon"
             elif "workshop" in question:
                 answer = "The AI testing workshop starts at 14:00 in Room B. Bring a laptop."
                 topic = "workshop"

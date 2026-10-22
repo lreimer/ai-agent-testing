@@ -145,7 +145,7 @@ option with private prompts or outputs.
 
 ## Conference walkthrough
 
-Ask either target "When and where is Mario-Leander Reimer's JavaCro session?"
+Ask either target "When and where is Mario-Leander Reimer's TestCon session?"
 The agent should retrieve the `session` topic and answer with the details above.
 For the separate fictional FAQ demonstration:
 
