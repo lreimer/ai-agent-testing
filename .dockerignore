@@ -3,3 +3,15 @@
 !agents/pom.xml
 !agents/src/
 !agents/src/**
+!.npmrc
+!.python-version
+!package.json
+!package-lock.json
+!pyproject.toml
+!pytest.ini
+!uv.lock
+!evals/
+!evals/**
+!tests/
+!tests/**
+**/__pycache__

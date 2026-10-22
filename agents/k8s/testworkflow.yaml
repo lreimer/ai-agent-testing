@@ -1,19 +1,100 @@
-kind: TestWorkflow
 apiVersion: testworkflows.testkube.io/v1
+kind: TestWorkflow
 metadata:
-  name: ephemeral-test
+  name: ai-agent-testing
   namespace: testkube
+  labels:
+    app.kubernetes.io/name: ai-agent-testing
+    app.kubernetes.io/component: evals
 spec:
-  content:
-    git:
-      uri: https://github.com/cerebro1/testkube-ephemeral
-      revision: main
-      paths:
-        - k6/testkube.js
+  config:
+    agentUrl:
+      type: string
+      description: Base URL of the ai-agent-testing ADK service
+      default: http://ai-agent-testing.default.svc.cluster.local:8000
+    judgeModel:
+      type: string
+      description: OpenAI judge model for DeepEval and RAGAS
+      default: gpt-4o-mini
+  pod:
+    # Explicit user/group (with command and workingDir) lets Testkube skip registry
+    # image inspection, so locally built images work without pushing them.
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 65532
+      runAsGroup: 65532
+      fsGroup: 65532
+      seccompProfile:
+        type: RuntimeDefault
+    volumes:
+      - name: reports
+        emptyDir:
+          sizeLimit: 64Mi
   container:
-    workingDir: /data/repo/k6/
-    image: grafana/k6:0.49.0
+    image: ai-agent-testing-evals:local
+    imagePullPolicy: IfNotPresent
+    workingDir: /app
+    env:
+      - name: ADK_BASE_URL
+        value: "{{ config.agentUrl }}"
+      - name: JUDGE_MODEL
+        value: "{{ config.judgeModel }}"
+      - name: OPENAI_API_KEY
+        valueFrom:
+          secretKeyRef:
+            name: ai-agent-testing-evals
+            key: OPENAI_API_KEY
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: "1"
+        memory: 1Gi
+    securityContext:
+      runAsNonRoot: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
+    volumeMounts:
+      - name: reports
+        mountPath: /reports
   steps:
-    - name: Run test
+    - name: Offline contract tests
       shell: |
-        k6 run testkube.js
+        RUN_LIVE_EVALS=0 python -m pytest -v -rA -p no:cacheprovider \
+          --junitxml=/reports/contract-tests.xml
+    - name: Wait for agent service
+      timeout: 3m
+      shell: |
+        python - <<'PY'
+        import os, time, urllib.request
+        url = os.environ["ADK_BASE_URL"].rstrip("/") + "/list-apps"
+        while True:
+            try:
+                with urllib.request.urlopen(url, timeout=5) as response:
+                    print(f"{url} -> {response.status}: {response.read().decode()}")
+                    break
+            except OSError as error:
+                print(f"Waiting for {url}: {error}")
+                time.sleep(5)
+        PY
+    - name: DeepEval demo
+      shell: |
+        RUN_LIVE_EVALS=1 DEEPEVAL_VERBOSE_MODE=1 python -m pytest evals/test_deepeval.py \
+          -v -s -rA -p no:cacheprovider --junitxml=/reports/deepeval.xml
+    - name: RAGAS demo
+      shell: |
+        RUN_LIVE_EVALS=1 python -m pytest evals/test_ragas.py \
+          -v -s -rA -p no:cacheprovider --junitxml=/reports/ragas.xml
+    - name: PromptFoo demo
+      shell: |
+        promptfoo eval -c evals/promptfoo/promptfooconfig.yaml --no-cache --table \
+          --no-progress-bar --output /reports/promptfoo.json /reports/promptfoo.html
+    - name: Save reports
+      condition: always
+      artifacts:
+        workingDir: /reports
+        paths:
+          - "**/*"

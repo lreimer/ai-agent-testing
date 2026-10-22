@@ -134,7 +134,7 @@ the exported `GOOGLE_API_KEY`, then apply the manifests:
 ```bash
 printenv GOOGLE_API_KEY | kubectl create secret generic ai-agent-testing \
   --from-file=GOOGLE_API_KEY=/dev/stdin
-kubectl apply -f agents/k8s/
+kubectl apply -f agents/k8s/deployment.yaml -f agents/k8s/service.yaml
 kubectl rollout status deployment/ai-agent-testing
 kubectl port-forward --address 127.0.0.1 service/ai-agent-testing 8000:8000
 ```
@@ -152,6 +152,43 @@ lost on Pod restarts or replacement; keep a single replica for this demo.
 The Service does not expose the app outside the cluster, but other cluster
 workloads can reach it. Use only a trusted demo cluster; there is still no
 authentication. No Ingress or public LoadBalancer is provided.
+
+### Run the tests and demos with Testkube
+
+[evals/Dockerfile](evals/Dockerfile) packages the offline tests and the DeepEval,
+RAGAS, and PromptFoo demos (Python 3.12 and Node.js with locked dependencies)
+into a non-root image. [agents/k8s/testworkflow.yaml](agents/k8s/testworkflow.yaml)
+defines the `ai-agent-testing` TestWorkflow in the `testkube` namespace. It
+runs the offline contract tests, waits for the agent's `/list-apps` endpoint,
+and then runs DeepEval, RAGAS, and PromptFoo in sequence, stopping at the first
+failure. JUnit XML and PromptFoo JSON/HTML reports are saved as artifacts.
+
+Requirements: Testkube installed in the cluster (namespace `testkube`) and the
+agent deployed as above. Build the image and make it available to the cluster
+like the agent image. The workflow sets an explicit pod user/group, so Testkube
+does not need registry access to inspect the locally built image. For a remote
+cluster, push the image and update `image` in the TestWorkflow. Create the OpenAI
+judge Secret in the `testkube` namespace from the exported `OPENAI_API_KEY`:
+
+```bash
+make docker-build-evals
+make k8s-evals-secret
+make testworkflow
+
+# or alternatively
+docker build -f evals/Dockerfile -t ai-agent-testing-evals:local .
+printenv OPENAI_API_KEY | kubectl create secret generic ai-agent-testing-evals \
+  --namespace testkube --from-file=OPENAI_API_KEY=/dev/stdin
+kubectl apply -f agents/k8s/testworkflow.yaml
+testkube run testworkflow ai-agent-testing --namespace testkube --watch
+```
+
+By default, the workflow targets
+`http://ai-agent-testing.default.svc.cluster.local:8000`. If the agent runs in
+another namespace, or to change the judge model, override the config:
+`testkube run testworkflow ai-agent-testing --config agentUrl=http://ai-agent-testing.<namespace>.svc.cluster.local:8000 --config judgeModel=gpt-4o-mini`.
+Without Kubernetes, `docker run --rm ai-agent-testing-evals:local` runs only the
+offline contract tests.
 
 ## Run the demos
 
