@@ -5,7 +5,7 @@ MVN ?= mvn
 NPM ?= npm
 DOCKER ?= docker
 
-.PHONY: help setup setup-python setup-node build docker-build docker-build-evals run test demos demo-deepeval demo-ragas demo-promptfoo k8s-secret k8s-evals-secret testworkflow testtrigger
+.PHONY: help setup setup-python setup-node build docker-build docker-build-evals run test demos demo-deepeval demo-ragas demo-promptfoo k8s-secret k8s-evals-secret testworkflow testtrigger clean
 
 help:
 	@printf '%s\n' \
@@ -22,6 +22,7 @@ help:
 		'make k8s-evals-secret Create the Testkube judge secret from OPENAI_API_KEY' \
 		'make testworkflow   Apply and run the Testkube TestWorkflow' \
 		'make testtrigger    Apply both TestWorkflows and their deployment trigger' \
+		'make clean          Remove demo/test Kubernetes resources and secrets' \
 		'make demos          Run all three live demos sequentially'
 
 setup: setup-python setup-node
@@ -75,6 +76,15 @@ testworkflow:
 	@kubectl apply -f agents/k8s/testworkflow.yaml
 	@kubectl apply -f agents/k8s/testtrigger.yaml
 	testkube run testworkflow ai-agent-testing --namespace testkube --watch
+
+clean:
+	kubectl delete --ignore-not-found -f agents/k8s/testtrigger.yaml
+	kubectl delete --ignore-not-found -f agents/k8s/testworkflow.yaml -f agents/k8s/k6workflow.yaml
+	kubectl delete jobs --namespace testkube --ignore-not-found \
+		--selector='testkube.io/workflow-name in (ai-agent-testing,ephemeral-test)'
+	kubectl delete --ignore-not-found -f agents/k8s/deployment.yaml -f agents/k8s/service.yaml
+	kubectl delete secret ai-agent-testing --ignore-not-found
+	kubectl delete secret ai-agent-testing-evals --namespace testkube --ignore-not-found
 
 demos:
 	$(MAKE) demo-deepeval
